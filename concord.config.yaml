@@ -1,0 +1,31 @@
+defaults:
+  provider: openai
+  model: gpt-4o
+  cache:
+    enabled: true
+    ttl_seconds: 86400
+  retries:
+    max_attempts: 2
+    backoff_ms: [200, 800]
+  budgets:
+    monthly_usd: 200
+    action_on_exceed: downgrade   # downgrade|block
+
+routing:
+  - name: short_prompts_cheaper
+    when:
+      est_input_tokens_lt: 350
+    use:
+      provider: openai
+      model: gpt-4o-mini
+
+  - name: long_prompts_quality
+    when:
+      est_input_tokens_gte: 350
+    use:
+      provider: openai
+      model: gpt-4o
+
+fallback:
+  provider: anthropic
+  model: claude-3-5-haiku
